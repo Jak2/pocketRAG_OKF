@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  body{margin:0;background:#d6d6d4;font-family:'Inter',system-ui,sans-serif}
+  *{box-sizing:border-box}
+  ::-webkit-scrollbar{width:0;height:0}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  textarea:focus,input:focus{outline:none}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:64px;display:flex;flex-wrap:wrap;gap:56px;align-items:flex-start">
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font:600 12px/1 'Inter';color:rgba(0,0,0,0.45);letter-spacing:0.02em">CHAT — DARK (INTERACTIVE)</div>
+    <div style="width:393px;height:852px;background:#121212;border-radius:10px;overflow:hidden;position:relative;box-shadow:0 8px 28px rgba(0,0,0,0.18);border:1px solid rgba(0,0,0,0.06)">
+
+      <sc-if value="{{ isOnboarding }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;padding:28px 24px;background:#121212">
+          <div style="display:flex;gap:6px;margin-bottom:40px">
+            <div style="width:28px;height:3px;border-radius:2px;background:#5B8DEF"></div>
+            <div style="width:28px;height:3px;border-radius:2px;background:{{ step2Bg }}"></div>
+          </div>
+
+          <div style="flex:1;display:flex;flex-direction:column">
+            <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ true }}">
+              <sc-if value="{{ folderPicked }}" hint-placeholder-val="{{ false }}">
+                <div>
+                  <h1 style="font:600 26px/1.3 'Inter';color:#ECECEA;margin:0 0 12px">Choose your knowledge folder</h1>
+                  <p style="font:400 15px/1.5 'Inter';color:rgba(255,255,255,0.56);margin:0 0 28px">Pocket RAG reads a folder of markdown notes and builds a local index. Nothing leaves this device.</p>
+                  <div style="border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
+                    <span style="font:500 13px 'JetBrains Mono';color:#ECECEA">~/notes</span>
+                    <span style="font:500 12px 'JetBrains Mono';color:#5B8DEF">212 files found</span>
+                  </div>
+                  <button onClick="{{ nextOnboardingStep }}" style="width:100%;padding:15px;border-radius:100px;border:none;background:#ECECEA;color:#121212;font:600 15px 'Inter';cursor:pointer">Continue</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ folderNotPicked }}" hint-placeholder-val="{{ true }}">
+                <div>
+                  <h1 style="font:600 26px/1.3 'Inter';color:#ECECEA;margin:0 0 12px">Choose your knowledge folder</h1>
+                  <p style="font:400 15px/1.5 'Inter';color:rgba(255,255,255,0.56);margin:0 0 28px">Pocket RAG reads a folder of markdown notes and builds a local index. Nothing leaves this device.</p>
+                  <button onClick="{{ pickFolder }}" style="width:100%;padding:15px;border-radius:100px;border:1px solid rgba(255,255,255,0.16);background:transparent;color:#ECECEA;font:600 15px 'Inter';cursor:pointer">Choose folder…</button>
+                </div>
+              </sc-if>
+            </sc-if>
+            <sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <h1 style="font:600 26px/1.3 'Inter';color:#ECECEA;margin:0 0 12px">Choose your model</h1>
+                <p style="font:400 15px/1.5 'Inter';color:rgba(255,255,255,0.56);margin:0 0 28px">Answers can run on-device (fully offline) or against a cloud endpoint you configure.</p>
+                <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px">
+                  <button onClick="{{ chooseDevice }}" style="text-align:left;padding:16px;border-radius:12px;border:1px solid {{ obDeviceBorder }};background:{{ obDeviceCardBg }};cursor:pointer">
+                    <div style="font:600 14px 'Inter';color:#ECECEA">On-device</div>
+                    <div style="font:500 11.5px 'JetBrains Mono';color:rgba(255,255,255,0.4);margin-top:4px">Runs locally · zero network</div>
+                  </button>
+                  <button onClick="{{ chooseCloud }}" style="text-align:left;padding:16px;border-radius:12px;border:1px solid {{ obCloudBorder }};background:{{ obCloudCardBg }};cursor:pointer">
+                    <div style="font:600 14px 'Inter';color:#ECECEA">Cloud</div>
+                    <div style="font:500 11.5px 'JetBrains Mono';color:rgba(255,255,255,0.4);margin-top:4px">Needs an endpoint + API key</div>
+                  </button>
+                </div>
+                <button onClick="{{ finishOnboarding }}" style="width:100%;padding:15px;border-radius:100px;border:none;background:#ECECEA;color:#121212;font:600 15px 'Inter';cursor:pointer">Get started</button>
+              </div>
+            </sc-if>
+          </div>
+
+          <button onClick="{{ skipOnboarding }}" style="align-self:center;background:none;border:none;color:rgba(255,255,255,0.34);font:500 13px 'Inter';padding:12px;cursor:pointer">Skip</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isChat }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#121212">
+          <div style="padding:20px 20px 14px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:flex-start;justify-content:space-between;flex:none">
+            <div>
+              <div style="font:600 17px 'Inter';color:#ECECEA">Knowledge</div>
+              <div style="font:500 11.5px 'JetBrains Mono';color:rgba(255,255,255,0.4);margin-top:4px">212 concepts · 1,431 chunks</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding-top:2px">
+              <button onClick="{{ toggleThemeMode }}" title="Theme" style="display:flex;align-items:center;gap:6px;background:none;border:none;padding:0;cursor:pointer">
+                <span style="font:500 10.5px 'JetBrains Mono';color:rgba(255,255,255,0.4)">RAM 2.4GB · CPU 18%</span>
+                <sc-if value="{{ isDarkMode }}" hint-placeholder-val="{{ true }}">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.6"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+                </sc-if>
+                <sc-if value="{{ isLightMode }}" hint-placeholder-val="{{ false }}">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.6"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+                </sc-if>
+              </button>
+              <button onClick="{{ goToMemory }}" title="Memory" style="background:none;border:none;padding:0;cursor:pointer">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.6"><path d="M9 18h6M10 21h4M12 3a5 5 0 00-3 9c.5.4.8 1 .8 1.6V15h4.4v-1.4c0-.6.3-1.2.8-1.6a5 5 0 00-3-9z"/></svg>
+              </button>
+              <button onClick="{{ goToConfig }}" title="Config" style="background:none;border:none;padding:0;cursor:pointer">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.6-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.6 1z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:22px">
+            <sc-for list="{{ messagesView }}" as="m" hint-placeholder-count="2">
+              <sc-if value="{{ m.isUser }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;justify-content:flex-end">
+                  <div style="max-width:82%;background:#1E1E1E;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:12px 16px;font:400 14.5px/1.5 'Inter';color:#ECECEA">{{ m.text }}</div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ m.isAssistant }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <div style="font:400 14.5px/1.65 'Inter';color:#ECECEA">{{ m.text }}</div>
+
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                    <button onClick="{{ m.toggle }}" style="display:flex;align-items:center;gap:6px;background:none;border:1px solid rgba(255,255,255,0.16);border-radius:100px;padding:5px 11px;cursor:pointer">
+                      <span style="font:600 11px 'JetBrains Mono';color:#5B8DEF">{{ m.modeLabel }}</span>
+                      <sc-if value="{{ m.fallback }}" hint-placeholder-val="{{ false }}">
+                        <span style="font:500 11px 'JetBrains Mono';color:rgba(255,255,255,0.32)">fallback</span>
+                      </sc-if>
+                    </button>
+                  </div>
+
+                  <sc-if value="{{ m.expanded }}" hint-placeholder-val="{{ false }}">
+                    <div style="background:#171717;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;font:500 11.5px/1.6 'JetBrains Mono';color:rgba(255,255,255,0.5)">
+                      <div>reason: <span style="color:rgba(255,255,255,0.75)">{{ m.reason }}</span></div>
+                      <div>confidence: <span style="color:rgba(255,255,255,0.75)">{{ m.confidencePct }}%</span> · latency: <span style="color:rgba(255,255,255,0.75)">{{ m.latencyMs }}ms</span></div>
+                      <div>items: <span style="color:rgba(255,255,255,0.75)">{{ m.items }}</span> · tokens: <span style="color:rgba(255,255,255,0.75)">{{ m.tokens }}</span></div>
+                      <sc-if value="{{ m.hasSeeds }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex;flex-direction:column;gap:3px">
+                          <span>seeds:</span>
+                          <sc-for list="{{ m.seedsView }}" as="sd" hint-placeholder-count="2">
+                            <span style="color:rgba(255,255,255,0.75);padding-left:10px">· {{ sd.path }}</span>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <button onClick="{{ m.retry }}" style="margin-top:6px;align-self:flex-start;background:rgba(91,141,239,0.12);border:1px solid rgba(91,141,239,0.4);border-radius:100px;padding:8px 14px;font:600 12px 'Inter';color:#8FB3F5;cursor:pointer">{{ m.retryLabel }}</button>
+                    </div>
+                  </sc-if>
+
+                  <sc-for list="{{ m.sourcesView }}" as="src" hint-placeholder-count="2">
+                  </sc-for>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px">
+                    <sc-for list="{{ m.sourcesView }}" as="src" hint-placeholder-count="2">
+                      <button onClick="{{ src.onClick }}" style="background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:5px 9px;font:500 11px 'JetBrains Mono';color:rgba(255,255,255,0.55);cursor:pointer">{{ src.path }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ showStatus }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:0 20px 10px;display:flex;align-items:center;gap:8px;flex:none">
+              <div style="width:11px;height:11px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.15);border-top-color:#5B8DEF;animation:spin 0.7s linear infinite"></div>
+              <span style="font:500 11.5px 'JetBrains Mono';color:rgba(255,255,255,0.45)">{{ statusLabel }}</span>
+            </div>
+          </sc-if>
+
+          <div style="flex:none;border-top:1px solid rgba(255,255,255,0.08);padding:14px 16px 18px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;gap:6px">
+              <button onClick="{{ setModeRAG }}" style="flex:1;padding:9px 0;border-radius:100px;font:600 12.5px 'JetBrains Mono';cursor:pointer;background:{{ ragBg }};color:{{ ragText }};border:1px solid {{ ragBorder }}">RAG</button>
+              <button onClick="{{ setModeOKF }}" style="flex:1;padding:9px 0;border-radius:100px;font:600 12.5px 'JetBrains Mono';cursor:pointer;background:{{ okfBg }};color:{{ okfText }};border:1px solid {{ okfBorder }}">OKF</button>
+              <button onClick="{{ setModeAuto }}" style="flex:1;padding:9px 0;border-radius:100px;font:600 12.5px 'JetBrains Mono';cursor:pointer;background:{{ autoBg }};color:{{ autoText }};border:1px solid {{ autoBorder }}">Auto</button>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:10px">
+              <textarea value="{{ composerText }}" onChange="{{ onComposerChange }}" placeholder="Ask your knowledge base…" rows="1" style="flex:1;resize:none;background:#171717;border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:11px 16px;font:400 14px 'Inter';color:#ECECEA;line-height:1.4"></textarea>
+              <button onClick="{{ sendMessage }}" style="width:38px;height:38px;border-radius:50%;background:#5B8DEF;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B1220" stroke-width="2.4"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSource }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#121212">
+          <div style="padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:12px;flex:none">
+            <button onClick="{{ goBack }}" style="background:none;border:none;padding:0;cursor:pointer">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ECECEA" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <span style="font:500 12.5px 'JetBrains Mono';color:#ECECEA;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ sourcePath }}</span>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;flex-direction:column;gap:5px;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;font:500 11.5px/1.6 'JetBrains Mono';color:rgba(255,255,255,0.5)">
+              <div>type: <span style="color:rgba(255,255,255,0.8)">{{ src.type }}</span></div>
+              <div>title: <span style="color:rgba(255,255,255,0.8)">{{ src.title }}</span></div>
+              <div>description: <span style="color:rgba(255,255,255,0.8)">{{ src.description }}</span></div>
+            </div>
+            <div style="font:400 15px/1.7 'Inter';color:#ECECEA">{{ src.body }}</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isMemory }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#121212">
+          <div style="padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;flex:none">
+            <div style="display:flex;align-items:center;gap:12px">
+              <button onClick="{{ goBack }}" style="background:none;border:none;padding:0;cursor:pointer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ECECEA" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <span style="font:600 16px 'Inter';color:#ECECEA">Memory</span>
+            </div>
+            <button onClick="{{ toggleShowRetired }}" style="background:none;border:1px solid rgba(255,255,255,0.15);border-radius:100px;padding:6px 11px;font:500 11px 'Inter';color:rgba(255,255,255,0.6);cursor:pointer">{{ retiredToggleLabel }}</button>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:8px 20px">
+            <sc-if value="{{ hasFacts }}" hint-placeholder-val="{{ true }}">
+              <sc-for list="{{ visibleFacts }}" as="f" hint-placeholder-count="3">
+                <div style="padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+                  <div>
+                    <div style="font:400 14px/1.5 'Inter';color:#ECECEA">{{ f.text }}</div>
+                    <div style="font:500 11px 'JetBrains Mono';color:rgba(255,255,255,0.4);margin-top:5px">{{ f.meta }}</div>
+                  </div>
+                  <div style="display:flex;gap:10px;flex:none;padding-top:2px">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.8"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+                  </div>
+                </div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ noFacts }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:40px 0;text-align:center;font:400 14px 'Inter';color:rgba(255,255,255,0.4)">Nothing remembered yet.</div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isConfig }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#121212">
+          <div style="padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:12px;flex:none">
+            <button onClick="{{ goBack }}" style="background:none;border:none;padding:0;cursor:pointer">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ECECEA" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <span style="font:600 16px 'Inter';color:#ECECEA">Config</span>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:16px 20px 30px;display:flex;flex-direction:column;gap:26px">
+
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="font:600 11px 'Inter';color:rgba(255,255,255,0.4);letter-spacing:0.05em">KNOWLEDGE BASE</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.07);padding-bottom:12px">
+                <span style="font:400 13px 'JetBrains Mono';color:rgba(255,255,255,0.7)">~/notes</span>
+                <button style="background:none;border:1px solid rgba(255,255,255,0.15);border-radius:100px;padding:6px 12px;font:500 12px 'Inter';color:#ECECEA;cursor:pointer">Choose folder</button>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.07);padding-bottom:12px">
+                <span style="font:400 13px 'JetBrains Mono';color:rgba(255,255,255,0.7)">nomic-embed-v1.5.gguf</span>
+                <button style="background:none;border:1px solid rgba(255,255,255,0.15);border-radius:100px;padding:6px 12px;font:500 12px 'Inter';color:#ECECEA;cursor:pointer">Choose .gguf</button>
+              </div>
+              <div style="font:500 11.5px 'JetBrains Mono';color:rgba(255,255,255,0.4)">Last indexed: today, 09:14</div>
+
+              <sc-if value="{{ notIndexing }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ startReindex }}" style="width:100%;padding:12px;border-radius:100px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:#ECECEA;font:600 13px 'Inter';cursor:pointer">Reindex now</button>
+              </sc-if>
+              <sc-if value="{{ indexing }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <div style="height:6px;border-radius:4px;background:rgba(255,255,255,0.1);overflow:hidden">
+                    <div style="height:100%;background:#5B8DEF;width:{{ indexPct }}%"></div>
+                  </div>
+                  <div style="display:flex;justify-content:space-between">
+                    <span style="font:500 11px 'JetBrains Mono';color:rgba(255,255,255,0.5)">embedding {{ indexProgress }}/1431</span>
+                    <span style="font:500 11px 'Inter';color:rgba(255,255,255,0.4);cursor:pointer">Cancel</span>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="font:600 11px 'Inter';color:rgba(255,255,255,0.4);letter-spacing:0.05em">MODEL</div>
+              <div style="display:flex;gap:6px">
+                <button onClick="{{ chooseCloud }}" style="flex:1;padding:9px 0;border-radius:100px;font:600 12px 'Inter';cursor:pointer;background:{{ cloudBg }};color:{{ cloudText }};border:1px solid {{ cloudBorder }}">Cloud</button>
+                <button onClick="{{ chooseDevice }}" style="flex:1;padding:9px 0;border-radius:100px;font:600 12px 'Inter';cursor:pointer;background:{{ deviceBg }};color:{{ deviceText }};border:1px solid {{ deviceBorder }}">On-device</button>
+              </div>
+              <div style="font:500 11.5px 'JetBrains Mono';color:rgba(255,255,255,0.4)">Qwen2.5-7B-Instruct-Q4.gguf · loaded</div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="font:600 11px 'Inter';color:rgba(255,255,255,0.4);letter-spacing:0.05em">PERSONAS</div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px">
+                  <span style="font:400 13px 'Inter';color:#ECECEA">Terse engineer</span>
+                  <div style="width:14px;height:14px;border-radius:50%;background:#5B8DEF"></div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:10px 14px">
+                  <span style="font:400 13px 'Inter';color:rgba(255,255,255,0.6)">Default</span>
+                  <div style="width:14px;height:14px;border-radius:50%;border:1px solid rgba(255,255,255,0.2)"></div>
+                </div>
+                <button style="align-self:flex-start;background:none;border:none;padding:2px 0;font:600 12px 'Inter';color:#5B8DEF;cursor:pointer">+ Add persona</button>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="font:600 11px 'Inter';color:rgba(255,255,255,0.4);letter-spacing:0.05em">SKILLS</div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ skillsView }}" as="sk" hint-placeholder-count="3">
+                  <button onClick="{{ sk.toggle }}" style="display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;background:none;cursor:pointer">
+                    <span style="font:400 13px 'Inter';color:#ECECEA">{{ sk.name }}</span>
+                    <div style="width:14px;height:14px;border-radius:50%;background:{{ sk.dotBg }};border:1px solid {{ sk.dotBorder }}"></div>
+                  </button>
+                </sc-for>
+                <button style="align-self:flex-start;background:none;border:none;padding:2px 0;font:600 12px 'Inter';color:#5B8DEF;cursor:pointer">+ Add skill</button>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="font:600 11px 'Inter';color:rgba(255,255,255,0.4);letter-spacing:0.05em">CUSTOM AGENTS</div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ customAgents }}" as="ag" hint-placeholder-count="2">
+                  <div style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px">
+                    <span style="font:400 13px 'Inter';color:#ECECEA">{{ ag.name }}</span>
+                    <span style="font:500 11px 'JetBrains Mono';color:rgba(255,255,255,0.4);margin-top:3px">{{ ag.model }}</span>
+                  </div>
+                </sc-for>
+                <button style="align-self:flex-start;background:none;border:none;padding:2px 0;font:600 12px 'Inter';color:#5B8DEF;cursor:pointer">+ New agent</button>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="font:600 11px 'Inter';color:rgba(255,255,255,0.4);letter-spacing:0.05em">AGENT LOGIC</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.07);padding-bottom:12px">
+                <span style="font:400 13px 'JetBrains Mono';color:rgba(255,255,255,0.7)">{{ agentLogicPath }}</span>
+                <button style="background:none;border:1px solid rgba(255,255,255,0.15);border-radius:100px;padding:6px 12px;font:500 12px 'Inter';color:#ECECEA;cursor:pointer">Choose .md</button>
+              </div>
+              <span style="font:500 11.5px 'JetBrains Mono';color:rgba(255,255,255,0.4)">Defines persona, routing rules, and tool permissions for the active agent.</span>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="font:600 11px 'Inter';color:rgba(255,255,255,0.4);letter-spacing:0.05em">FILE TOOLS</div>
+              <div style="font:500 11.5px 'JetBrains Mono';color:rgba(255,255,255,0.4)">File types the agent can read and cite as sources.</div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ fileToolsView }}" as="ft" hint-placeholder-count="5">
+                  <button onClick="{{ ft.toggle }}" style="display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;background:none;cursor:pointer">
+                    <span style="font:400 13px 'Inter';color:#ECECEA">{{ ft.name }}</span>
+                    <div style="width:14px;height:14px;border-radius:50%;background:{{ ft.dotBg }};border:1px solid {{ ft.dotBorder }}"></div>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="font:600 11px 'Inter';color:rgba(255,255,255,0.4);letter-spacing:0.05em">DIAGNOSTICS</div>
+              <div style="font:500 12px 'JetBrains Mono';color:rgba(255,255,255,0.55)">RAM 2.4GB / 8GB · CPU 18%</div>
+              <button onClick="{{ goToRoutingLog }}" style="display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;background:none;cursor:pointer">
+                <span style="font:400 13px 'Inter';color:#ECECEA">Routing log</span>
+                <span style="font:500 11.5px 'JetBrains Mono';color:rgba(255,255,255,0.4)">312 logged · 8% fallback ›</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isRoutingLog }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#121212">
+          <div style="padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:12px;flex:none">
+            <button onClick="{{ backToConfig }}" style="background:none;border:none;padding:0;cursor:pointer">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ECECEA" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <span style="font:600 16px 'Inter';color:#ECECEA">Routing log</span>
+          </div>
+          <div style="display:flex;padding:14px 20px;gap:16px;border-bottom:1px solid rgba(255,255,255,0.08)">
+            <div><div style="font:600 15px 'JetBrains Mono';color:#ECECEA">312</div><div style="font:500 10px 'Inter';color:rgba(255,255,255,0.4)">queries</div></div>
+            <div><div style="font:600 15px 'JetBrains Mono';color:#ECECEA">8%</div><div style="font:500 10px 'Inter';color:rgba(255,255,255,0.4)">fallback</div></div>
+            <div><div style="font:600 15px 'JetBrains Mono';color:#ECECEA">4%</div><div style="font:500 10px 'Inter';color:rgba(255,255,255,0.4)">overridden</div></div>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:8px 14px">
+            <sc-for list="{{ routingRows }}" as="r" hint-placeholder-count="6">
+              <div style="display:flex;flex-direction:column;gap:2px;padding:9px 6px;border-bottom:1px solid rgba(255,255,255,0.06);font:400 10.5px/1.5 'JetBrains Mono'">
+                <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,0.35)">
+                  <span>{{ r.ts }}</span>
+                  <span style="color:{{ r.modeColor }}">{{ r.mode }}</span>
+                </div>
+                <div style="color:rgba(255,255,255,0.75)">{{ r.q }}</div>
+                <div style="color:rgba(255,255,255,0.35)">{{ r.reason }}<sc-if value="{{ r.fallback }}" hint-placeholder-val="{{ false }}"> · fallback</sc-if><sc-if value="{{ r.override }}" hint-placeholder-val="{{ false }}"> · overridden</sc-if></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font:600 12px/1 'Inter';color:rgba(0,0,0,0.45);letter-spacing:0.02em">CHAT — LIGHT VARIANT</div>
+    <div style="width:393px;height:852px;background:#FAFAF8;border-radius:10px;overflow:hidden;position:relative;box-shadow:0 8px 28px rgba(0,0,0,0.14);border:1px solid rgba(0,0,0,0.06)">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+        <div style="padding:20px 20px 14px;border-bottom:1px solid rgba(0,0,0,0.08);display:flex;align-items:flex-start;justify-content:space-between">
+          <div>
+            <div style="font:600 17px 'Inter';color:#17171A">Knowledge</div>
+            <div style="font:500 11.5px 'JetBrains Mono';color:rgba(0,0,0,0.4);margin-top:4px">212 concepts · 1,431 chunks</div>
+          </div>
+          <div style="display:flex;gap:14px;padding-top:2px">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="1.6"><path d="M9 18h6M10 21h4M12 3a5 5 0 00-3 9c.5.4.8 1 .8 1.6V15h4.4v-1.4c0-.6.3-1.2.8-1.6a5 5 0 00-3-9z"/></svg>
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9M19.4 15a1.7 1.7 0 001.6-1M4.6 9a1.7 1.7 0 00-.3-1.9M4.6 9a1.7 1.7 0 00-1.6 1"/></svg>
+          </div>
+        </div>
+        <div style="flex:1;padding:20px;display:flex;flex-direction:column;gap:22px">
+          <div style="display:flex;justify-content:flex-end">
+            <div style="max-width:82%;background:#F0EFEC;border:1px solid rgba(0,0,0,0.08);border-radius:20px;padding:12px 16px;font:400 14.5px/1.5 'Inter';color:#17171A">What's the retry budget for the payments service?</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="font:400 14.5px/1.65 'Inter';color:#17171A">The payments service retry policy allows up to 3 attempts with exponential backoff starting at 200ms, capped at 2s. The retry budget is 40% of the service's request budget, enforced in the client-side interceptor rather than the gateway.</div>
+            <div style="display:flex;gap:8px">
+              <div style="display:flex;align-items:center;gap:6px;border:1px solid rgba(0,0,0,0.14);border-radius:100px;padding:5px 11px">
+                <span style="font:600 11px 'JetBrains Mono';color:#3D6FD9">RAG</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <div style="border:1px solid rgba(0,0,0,0.1);border-radius:6px;padding:5px 9px;font:500 11px 'JetBrains Mono';color:rgba(0,0,0,0.55)">services/payments/retry-policy.md</div>
+            </div>
+          </div>
+        </div>
+        <div style="border-top:1px solid rgba(0,0,0,0.08);padding:14px 16px 18px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:6px">
+            <div style="flex:1;text-align:center;padding:9px 0;border-radius:100px;font:600 12.5px 'JetBrains Mono';border:1px solid rgba(0,0,0,0.16);color:#17171A">RAG</div>
+            <div style="flex:1;text-align:center;padding:9px 0;border-radius:100px;font:600 12.5px 'JetBrains Mono';border:1px solid rgba(0,0,0,0.16);color:#17171A">OKF</div>
+            <div style="flex:1;text-align:center;padding:9px 0;border-radius:100px;font:600 12.5px 'JetBrains Mono';background:#17171A;color:#FAFAF8">Auto</div>
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:10px">
+            <div style="flex:1;background:#F5F4F1;border:1px solid rgba(0,0,0,0.12);border-radius:20px;padding:11px 16px;font:400 14px 'Inter';color:rgba(0,0,0,0.35)">Ask your knowledge base…</div>
+            <div style="width:38px;height:38px;border-radius:50%;background:#3D6FD9;display:flex;align-items:center;justify-content:center;flex:none">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FAFAF8" stroke-width="2.4"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font:600 12px/1 'Inter';color:rgba(0,0,0,0.45);letter-spacing:0.02em">COMPONENT SHEET</div>
+    <div style="width:393px;background:#121212;border-radius:10px;padding:26px 22px;display:flex;flex-direction:column;gap:26px;box-shadow:0 8px 28px rgba(0,0,0,0.18);border:1px solid rgba(0,0,0,0.06)">
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font:600 11px 'Inter';color:rgba(255,255,255,0.4);letter-spacing:0.05em">MODE CHIP — STATES</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <div style="border:1px solid rgba(255,255,255,0.16);border-radius:100px;padding:5px 11px;font:600 11px 'JetBrains Mono';color:#5B8DEF">RAG</div>
+          <div style="border:1px solid rgba(255,255,255,0.16);border-radius:100px;padding:5px 11px;font:600 11px 'JetBrains Mono';color:#5B8DEF">OKF</div>
+          <div style="border:1px solid rgba(255,255,255,0.16);border-radius:100px;padding:5px 11px;font:600 11px 'JetBrains Mono';color:#5B8DEF">auto → OKF</div>
+          <div style="display:flex;gap:6px;border:1px solid rgba(255,255,255,0.16);border-radius:100px;padding:5px 11px">
+            <span style="font:600 11px 'JetBrains Mono';color:#5B8DEF">auto → OKF</span>
+            <span style="font:500 11px 'JetBrains Mono';color:rgba(255,255,255,0.32)">fallback</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font:600 11px 'Inter';color:rgba(255,255,255,0.4);letter-spacing:0.05em">THREE-POSITION SWITCH</div>
+        <div style="display:flex;gap:6px">
+          <div style="flex:1;text-align:center;padding:9px 0;border-radius:100px;font:600 12.5px 'JetBrains Mono';background:#ECECEA;color:#121212">RAG</div>
+          <div style="flex:1;text-align:center;padding:9px 0;border-radius:100px;font:600 12.5px 'JetBrains Mono';border:1px solid rgba(255,255,255,0.18);color:#ECECEA">OKF</div>
+          <div style="flex:1;text-align:center;padding:9px 0;border-radius:100px;font:600 12.5px 'JetBrains Mono';border:1px solid rgba(255,255,255,0.18);color:#ECECEA">Auto</div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font:600 11px 'Inter';color:rgba(255,255,255,0.4);letter-spacing:0.05em">SOURCE CHIP</div>
+        <div style="display:flex">
+          <div style="border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:5px 9px;font:500 11px 'JetBrains Mono';color:rgba(255,255,255,0.55)">concepts/metrics/daily-active-users.md</div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font:600 11px 'Inter';color:rgba(255,255,255,0.4);letter-spacing:0.05em">EXPANDED METADATA</div>
+        <div style="background:#171717;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;font:500 11.5px/1.6 'JetBrains Mono';color:rgba(255,255,255,0.5)">
+          <div>reason: <span style="color:rgba(255,255,255,0.75)">heuristic:definitional</span></div>
+          <div>confidence: <span style="color:rgba(255,255,255,0.75)">78%</span> · latency: <span style="color:rgba(255,255,255,0.75)">64ms</span></div>
+          <div>items: <span style="color:rgba(255,255,255,0.75)">14</span> · tokens: <span style="color:rgba(255,255,255,0.75)">340</span></div>
+          <button style="margin-top:6px;align-self:flex-start;background:rgba(91,141,239,0.12);border:1px solid rgba(91,141,239,0.4);border-radius:100px;padding:8px 14px;font:600 12px 'Inter';color:#8FB3F5">Wrong mode — retry as RAG</button>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font:600 11px 'Inter';color:rgba(255,255,255,0.4);letter-spacing:0.05em">MESSAGE PAIR</div>
+        <div style="display:flex;justify-content:flex-end">
+          <div style="max-width:82%;background:#1E1E1E;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:12px 16px;font:400 14.5px/1.5 'Inter';color:#ECECEA">Which service owns rate limiting?</div>
+        </div>
+        <div style="font:400 14.5px/1.65 'Inter';color:#ECECEA">The API gateway enforces per-client rate limits at the edge; individual services don't implement their own.</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    screen: 'onboarding',
+    onboardingStep: 1,
+    folderPicked: false,
+    messages: [
+      { role: 'user', text: "What's the retry budget for the payments service?" },
+      { role: 'assistant', text: "The payments service retry policy allows up to 3 attempts with exponential backoff starting at 200ms, capped at 2s. The retry budget is 40% of the service's request budget, enforced in the client-side interceptor rather than the gateway.",
+        mode: 'RAG', auto: false, fallback: false, reason: 'heuristic:lookup', confidence: 0.91, latencyMs: 38, items: 6, tokens: 212,
+        seeds: [], sources: ['services/payments/architecture.md', 'services/payments/retry-policy.md'], expanded: false },
+      { role: 'user', text: 'How does the checkout timeout relate to the payments retry budget?' },
+      { role: 'assistant', text: "The checkout service times out client calls to payments at 1.5s. That's shorter than the payments retry policy's worst case (3 attempts, capped backoff) can take, around 2.3s, so checkout can time out mid-retry and report a failure even when payments eventually succeeds. That mismatch is what the daily-active-users dip traced back to on Aug 25.",
+        mode: 'OKF', auto: true, fallback: false, reason: 'heuristic:definitional', confidence: 0.78, latencyMs: 64, items: 14, tokens: 340,
+        seeds: ['services/checkout/architecture.md', 'services/payments/retry-policy.md'], sources: ['incidents/2026-08-25-checkout-p99.md', 'services/checkout/architecture.md', 'services/payments/retry-policy.md'], expanded: true },
+    ],
+    composerText: '',
+    composerMode: 'Auto',
+    status: null,
+    statusTokens: 0,
+    sourcePath: 'services/payments/retry-policy.md',
+    memoryShowRetired: false,
+    indexing: false,
+    indexProgress: 0,
+    modelMode: 'device',
+    themeMode: 'dark',
+    skills: [
+      { name: 'Summarize a source doc', enabled: true },
+      { name: 'Explain a routing decision', enabled: true },
+      { name: 'Draft a retry-policy diff', enabled: false },
+    ],
+    fileTools: [
+      { name: 'PDF', enabled: true },
+      { name: 'Word', enabled: true },
+      { name: 'Excel', enabled: false },
+      { name: 'PowerPoint', enabled: false },
+      { name: 'Image', enabled: true },
+    ],
+  };
+
+  customAgents = [
+    { name: 'Incident triage agent', model: 'Qwen2.5-7B-Instruct-Q4' },
+    { name: 'Docs reviewer agent', model: 'Qwen2.5-7B-Instruct-Q4' },
+  ];
+  agentLogicPath = 'agent/logic.md';
+
+  sources = {
+    'services/payments/architecture.md': { type: 'architecture', title: 'Payments Service', description: 'Handles authorization, capture, and settlement for all payment methods.',
+      body: 'The payments service sits between checkout and the card network adapters. All writes go through a single Postgres primary with synchronous replication to two standbys. Requests are idempotent by client-supplied key, so retries never double-charge.' },
+    'services/payments/retry-policy.md': { type: 'policy', title: 'Payments Retry Policy', description: 'Retry and backoff rules for the authorization endpoint.',
+      body: "Client calls to the authorization endpoint retry up to 3 times with exponential backoff: 200ms, 400ms, 800ms, plus jitter. The retry budget is capped at 40% of the service's total request budget and enforced in the client interceptor, not the gateway, so callers can override it per request." },
+    'services/checkout/architecture.md': { type: 'architecture', title: 'Checkout Service', description: 'Cart validation, tax, and the payments call.',
+      body: 'Checkout orchestrates cart validation, tax calculation, and the call to payments. It treats payments as a single synchronous dependency with a 1.5s client-side timeout, after which it reports a failure to the user regardless of whether payments eventually succeeds.' },
+    'incidents/2026-08-25-checkout-p99.md': { type: 'incident', title: 'Checkout p99 Latency Spike — Aug 25', description: 'Root cause and mitigation for the Aug 25 latency incident.',
+      body: "p99 latency on checkout rose from 310ms to 2.1s between 14:00 and 15:30 UTC. Root cause: a deploy to payments increased average authorization time under load, pushing retries past checkout's 1.5s timeout. Checkout reported failures on requests that payments later completed successfully. Mitigated by raising the checkout timeout to 2.5s and rolling back the payments deploy." },
+  };
+
+  memoryFacts = [
+    { text: 'Prefers concise, technical answers over long explanations.', meta: 'preference · 3 hits', retired: false },
+    { text: 'Working primarily on the checkout and payments services.', meta: 'preference · 7 hits', retired: false },
+    { text: 'Timezone is America/Chicago.', meta: 'fact · 1 hit', retired: false },
+    { text: 'Uses the term "OKF" loosely to mean any graph-based retrieval.', meta: 'preference · 2 hits · retired', retired: true },
+  ];
+
+  routingRowsData = [
+    { ts: '14:02:11', q: 'retry budget for payments?', mode: 'RAG', reason: 'heuristic:lookup', fallback: false, override: false },
+    { ts: '13:58:47', q: 'checkout timeout vs retry bud…', mode: 'OKF', reason: 'heuristic:definitional', fallback: false, override: false },
+    { ts: '13:40:02', q: 'why did dau dip on the 25th?', mode: 'OKF', reason: 'heuristic:causal', fallback: true, override: false },
+    { ts: '12:15:33', q: 'list all payments env vars', mode: 'RAG', reason: 'heuristic:enumeration', fallback: false, override: true },
+    { ts: '11:02:59', q: 'how do checkout and cart rela…', mode: 'OKF', reason: 'heuristic:relational', fallback: false, override: false },
+    { ts: '10:47:18', q: 'p99 latency last deploy', mode: 'RAG', reason: 'heuristic:lookup', fallback: false, override: false },
+  ];
+
+  pickFolder() { this.setState({ folderPicked: true }); }
+  nextOnboardingStep() { this.setState({ onboardingStep: 2 }); }
+  chooseModelMode(mode) { this.setState({ modelMode: mode }); }
+  finishOnboarding() { this.setState({ screen: 'chat' }); }
+  skipOnboarding() { this.setState({ screen: 'chat' }); }
+  goTo(screen) { this.setState({ screen }); }
+  backToConfig() { this.setState({ screen: 'config' }); }
+
+  toggleExpand(idx) {
+    this.setState(s => ({ messages: s.messages.map((m, i) => i === idx ? { ...m, expanded: !m.expanded } : m) }));
+  }
+
+  retryAs(idx) {
+    this.setState(s => ({ messages: s.messages.map((m, i) => {
+      if (i !== idx) return m;
+      const newMode = m.mode === 'RAG' ? 'OKF' : 'RAG';
+      return { ...m, mode: newMode, auto: false, reason: 'user:override' };
+    }) }));
+  }
+
+  setComposerMode(mode) { this.setState({ composerMode: mode }); }
+  setComposerText(v) { this.setState({ composerText: v }); }
+
+  sendMessage() {
+    const text = this.state.composerText.trim();
+    if (!text) return;
+    this.setState(s => ({ messages: [...s.messages, { role: 'user', text }], composerText: '', status: 'retrieving' }));
+    setTimeout(() => {
+      this.setState({ status: 'generating', statusTokens: 0 });
+      let t = 0;
+      const iv = setInterval(() => {
+        t += 16;
+        this.setState({ statusTokens: t });
+        if (t >= 64) { clearInterval(iv); this.finishAssistantReply(); }
+      }, 90);
+    }, 650);
+  }
+
+  finishAssistantReply() {
+    const mode = this.state.composerMode === 'Auto' ? 'OKF' : this.state.composerMode;
+    const auto = this.state.composerMode === 'Auto';
+    const reply = {
+      role: 'assistant',
+      text: 'This prototype simulates retrieval instead of calling a live model — wire up an on-device .gguf in Config to get answers grounded in your own notes.',
+      mode, auto, fallback: false, reason: auto ? 'heuristic:definitional' : 'user:forced',
+      confidence: 0.5, latencyMs: 41, items: 0, tokens: 64, seeds: [], sources: [], expanded: false,
+    };
+    this.setState(s => ({ messages: [...s.messages, reply], status: null }));
+  }
+
+  toggleShowRetired() { this.setState(s => ({ memoryShowRetired: !s.memoryShowRetired })); }
+
+  startReindex() {
+    this.setState({ indexing: true, indexProgress: 0 });
+    const iv = setInterval(() => {
+      this.setState(s => {
+        const next = Math.min(1431, s.indexProgress + 143);
+        if (next >= 1431) { clearInterval(iv); return { indexProgress: 1431, indexing: false }; }
+        return { indexProgress: next };
+      });
+    }, 200);
+  }
+
+  toggleModelMode() { this.setState(s => ({ modelMode: s.modelMode === 'cloud' ? 'device' : 'cloud' })); }
+  toggleThemeMode() { this.setState(s => ({ themeMode: s.themeMode === 'dark' ? 'light' : 'dark' })); }
+  toggleSkill(idx) { this.setState(s => ({ skills: s.skills.map((sk, i) => i === idx ? { ...sk, enabled: !sk.enabled } : sk) })); }
+  toggleFileTool(idx) { this.setState(s => ({ fileTools: s.fileTools.map((f, i) => i === idx ? { ...f, enabled: !f.enabled } : f) })); }
+  openSource(path) { this.setState({ screen: 'source', sourcePath: path }); }
+
+  renderVals() {
+    const s = this.state;
+    const visibleFacts = this.memoryFacts.filter(f => s.memoryShowRetired || !f.retired);
+
+    const messagesView = s.messages.map((m, i) => {
+      if (m.role === 'user') return { key: i, isUser: true, isAssistant: false, text: m.text };
+      const modeLabel = m.auto ? `auto → ${m.mode}` : m.mode;
+      const hasSeeds = m.mode === 'OKF' && m.seeds && m.seeds.length > 0;
+      const retryTarget = m.mode === 'RAG' ? 'OKF' : 'RAG';
+      return {
+        key: i, isUser: false, isAssistant: true, text: m.text, modeLabel, fallback: m.fallback,
+        expanded: m.expanded, reason: m.reason, confidencePct: Math.round(m.confidence * 100),
+        latencyMs: m.latencyMs, items: m.items, tokens: m.tokens, hasSeeds,
+        seedsView: (m.seeds || []).map(p => ({ path: p })),
+        sourcesView: (m.sources || []).map(p => ({ path: p, onClick: () => this.openSource(p) })),
+        retryLabel: `Wrong mode — retry as ${retryTarget}`,
+        retry: () => this.retryAs(i),
+        toggle: () => this.toggleExpand(i),
+      };
+    });
+
+    const routingRows = this.routingRowsData.map(r => ({ ...r, modeColor: r.mode === 'RAG' ? '#5B8DEF' : '#8FB3F5' }));
+
+    const modeButtonStyle = (active) => active
+      ? { bg: '#ECECEA', text: '#121212', border: '#ECECEA' }
+      : { bg: 'transparent', text: '#ECECEA', border: 'rgba(255,255,255,0.18)' };
+    const rag = modeButtonStyle(s.composerMode === 'RAG');
+    const okf = modeButtonStyle(s.composerMode === 'OKF');
+    const auto = modeButtonStyle(s.composerMode === 'Auto');
+    const cloud = modeButtonStyle(s.modelMode === 'cloud');
+    const device = modeButtonStyle(s.modelMode === 'device');
+
+    return {
+      screen: s.screen,
+      isOnboarding: s.screen === 'onboarding', isChat: s.screen === 'chat', isSource: s.screen === 'source',
+      isMemory: s.screen === 'memory', isConfig: s.screen === 'config', isRoutingLog: s.screen === 'routinglog',
+      onboardingStep: s.onboardingStep, isStep1: s.onboardingStep === 1, isStep2: s.onboardingStep === 2,
+      folderPicked: s.folderPicked, folderNotPicked: !s.folderPicked,
+      step2Bg: s.onboardingStep === 2 ? '#5B8DEF' : 'rgba(255,255,255,0.12)',
+      obDeviceBorder: s.modelMode === 'device' ? '#5B8DEF' : 'rgba(255,255,255,0.12)',
+      obDeviceCardBg: s.modelMode === 'device' ? 'rgba(91,141,239,0.1)' : 'transparent',
+      obCloudBorder: s.modelMode === 'cloud' ? '#5B8DEF' : 'rgba(255,255,255,0.12)',
+      obCloudCardBg: s.modelMode === 'cloud' ? 'rgba(91,141,239,0.1)' : 'transparent',
+      pickFolder: () => this.pickFolder(), nextOnboardingStep: () => this.nextOnboardingStep(),
+      chooseCloud: () => this.chooseModelMode('cloud'), chooseDevice: () => this.chooseModelMode('device'),
+      finishOnboarding: () => this.finishOnboarding(), skipOnboarding: () => this.skipOnboarding(),
+      goToChat: () => this.goTo('chat'), goToConfig: () => this.goTo('config'), goToMemory: () => this.goTo('memory'),
+      goToRoutingLog: () => this.goTo('routinglog'), backToConfig: () => this.backToConfig(), goBack: () => this.goTo('chat'),
+      messagesView,
+      composerText: s.composerText, onComposerChange: (e) => this.setComposerText(e.target.value),
+      composerMode: s.composerMode, setModeRAG: () => this.setComposerMode('RAG'), setModeOKF: () => this.setComposerMode('OKF'), setModeAuto: () => this.setComposerMode('Auto'),
+      ragBg: rag.bg, ragText: rag.text, ragBorder: rag.border,
+      okfBg: okf.bg, okfText: okf.text, okfBorder: okf.border,
+      autoBg: auto.bg, autoText: auto.text, autoBorder: auto.border,
+      sendMessage: () => this.sendMessage(),
+      status: s.status, showStatus: !!s.status,
+      statusLabel: s.status === 'retrieving' ? 'retrieving…' : s.status === 'generating' ? `generating (${s.statusTokens} tokens)` : '',
+      memoryShowRetired: s.memoryShowRetired, toggleShowRetired: () => this.toggleShowRetired(),
+      retiredToggleLabel: s.memoryShowRetired ? 'Hide retired' : 'Show retired',
+      visibleFacts, hasFacts: visibleFacts.length > 0, noFacts: visibleFacts.length === 0,
+      indexing: s.indexing, notIndexing: !s.indexing, indexProgress: s.indexProgress, indexPct: Math.round(s.indexProgress / 1431 * 100), startReindex: () => this.startReindex(),
+      modelMode: s.modelMode, toggleModelMode: () => this.toggleModelMode(),
+      cloudBg: cloud.bg, cloudText: cloud.text, cloudBorder: cloud.border,
+      deviceBg: device.bg, deviceText: device.text, deviceBorder: device.border,
+      sourcePath: s.sourcePath, src: this.sources[s.sourcePath] || {},
+      routingRows,
+      skillsView: s.skills.map((sk, i) => ({ ...sk, toggle: () => this.toggleSkill(i), dotBg: sk.enabled ? '#5B8DEF' : 'transparent', dotBorder: sk.enabled ? '#5B8DEF' : 'rgba(255,255,255,0.25)' })),
+      fileToolsView: s.fileTools.map((f, i) => ({ ...f, toggle: () => this.toggleFileTool(i), dotBg: f.enabled ? '#5B8DEF' : 'transparent', dotBorder: f.enabled ? '#5B8DEF' : 'rgba(255,255,255,0.25)' })),
+      customAgents: this.customAgents,
+      agentLogicPath: this.agentLogicPath,
+      isDarkMode: s.themeMode === 'dark', isLightMode: s.themeMode === 'light', toggleThemeMode: () => this.toggleThemeMode(),
+    };
+  }
+}
+
+</script>
+</body>
+</html>
